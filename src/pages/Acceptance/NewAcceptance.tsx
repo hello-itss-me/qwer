@@ -19,6 +19,7 @@ export const NewAcceptance: React.FC = () => {
   const [showAddGroupModal, setShowAddGroupModal] = useState(false)
   const [showAddServiceModal, setShowAddServiceModal] = useState(false)
   const [currentGroupName, setCurrentGroupName] = useState('')
+  const [currentPositionNumber, setCurrentPositionNumber] = useState<number | null>(null)
 
   const handleDataUpload = (data: ReceptionExcelRow[]) => {
     setReceptionData(data)
@@ -48,7 +49,14 @@ export const NewAcceptance: React.FC = () => {
   }
 
   const handleAddGroupClick = () => {
+    setCurrentPositionNumber(null)
     setShowAddGroupModal(true)
+  }
+
+  const handleAddItemToGroup = (positionNumber: number, workGroup: string) => {
+    setCurrentPositionNumber(positionNumber)
+    setCurrentGroupName(workGroup)
+    setShowAddServiceModal(true)
   }
 
   const handleGroupNext = (groupName: string) => {
@@ -67,38 +75,45 @@ export const NewAcceptance: React.FC = () => {
       setErrorMessage('Невозможно добавить группу работ. Сначала загрузите данные о приемке.')
       setShowAddServiceModal(false)
       setCurrentGroupName('')
+      setCurrentPositionNumber(null)
       return
     }
 
-    const existingPositionNumber = receptionData.length > 0
-      ? receptionData[0].positionNumber
-      : 1
+    const targetPositionNumber = currentPositionNumber !== null
+      ? currentPositionNumber
+      : receptionData[0].positionNumber
 
-    const receptionDate = receptionData[0].receptionDate
-    const receptionNumber = receptionData[0].receptionNumber
-    const counterpartyName = receptionData[0].counterpartyName
-    const subdivisionName = receptionData[0].subdivisionName
-    const serviceName = receptionData[0].serviceName
+    const positionItems = receptionData.filter(item => item.positionNumber === targetPositionNumber)
+    if (positionItems.length === 0) {
+      setErrorMessage('Не найдена позиция для добавления')
+      setShowAddServiceModal(false)
+      setCurrentGroupName('')
+      setCurrentPositionNumber(null)
+      return
+    }
+
+    const firstItem = positionItems[0]
 
     const newRow: ReceptionExcelRow = {
       receptionId: crypto.randomUUID(),
-      receptionDate,
-      receptionNumber,
-      counterpartyName,
-      subdivisionName,
-      positionNumber: existingPositionNumber,
-      serviceName: serviceName,
+      receptionDate: firstItem.receptionDate,
+      receptionNumber: firstItem.receptionNumber,
+      counterpartyName: firstItem.counterpartyName,
+      subdivisionName: firstItem.subdivisionName,
+      positionNumber: targetPositionNumber,
+      serviceName: firstItem.serviceName,
       itemName: service.name,
       workGroup: currentGroupName,
       transactionType: service.transactionType,
       price: service.pricePerUnit,
       quantity: service.quantity,
-      motorInventoryNumber: '',
+      motorInventoryNumber: firstItem.motorInventoryNumber,
     }
 
     setReceptionData([...receptionData, newRow])
     setShowAddServiceModal(false)
     setCurrentGroupName('')
+    setCurrentPositionNumber(null)
     setSuccessMessage(`Добавлена новая позиция в группу "${currentGroupName}"`)
   }
 
@@ -156,6 +171,7 @@ export const NewAcceptance: React.FC = () => {
               onDataChange={setReceptionData}
               onAddGroupClick={receptionData.length > 0 ? handleAddGroupClick : undefined}
               onDuplicatePosition={receptionData.length > 0 ? handleDuplicatePosition : undefined}
+              onAddItemToGroup={receptionData.length > 0 ? handleAddItemToGroup : undefined}
             />
           )}
         </div>
@@ -200,6 +216,7 @@ export const NewAcceptance: React.FC = () => {
           onClose={() => {
             setShowAddServiceModal(false)
             setCurrentGroupName('')
+            setCurrentPositionNumber(null)
           }}
           groupName={currentGroupName}
           onSave={handleServiceSave}

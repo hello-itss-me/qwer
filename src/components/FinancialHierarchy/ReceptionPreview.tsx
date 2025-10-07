@@ -7,6 +7,7 @@ interface ReceptionPreviewProps {
   onDataChange?: (data: ReceptionExcelRow[]) => void
   onAddGroupClick?: () => void
   onDuplicatePosition?: (positionNumber: number) => void
+  onAddItemToGroup?: (positionNumber: number, workGroup: string) => void
 }
 
 interface PositionItemProps {
@@ -338,9 +339,10 @@ interface WorkGroupProps {
   onItemUpdate?: (itemIndex: number, updates: Partial<ReceptionExcelRow>) => void
   onItemNameUpdate?: (itemIndex: number, newName: string) => void
   onItemDelete?: (itemIndex: number) => void
+  onAddItemToGroup?: (workGroup: string) => void
 }
 
-const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items, onItemUpdate, onItemNameUpdate, onItemDelete }) => {
+const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items, onItemUpdate, onItemNameUpdate, onItemDelete, onAddItemToGroup }) => {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const baseItemMap = new Map<string, ReceptionExcelRow[]>()
@@ -398,6 +400,17 @@ const WorkGroup: React.FC<WorkGroupProps> = ({ workGroup, items, onItemUpdate, o
               } : undefined}
             />
           ))}
+          {onAddItemToGroup && (
+            <div className="mt-2">
+              <button
+                onClick={() => onAddItemToGroup(workGroup)}
+                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors py-2"
+              >
+                <Plus size={16} />
+                Добавить позицию в текущей группе
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -414,9 +427,10 @@ interface PositionGroupProps {
   onSubdivisionNameUpdate?: (newSubdivisionName: string) => void
   onAddGroupClick?: () => void
   onDuplicatePosition?: () => void
+  onAddItemToGroup?: (workGroup: string) => void
 }
 
-const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, onItemUpdate, onItemNameUpdate, onItemDelete, onServiceNameUpdate, onSubdivisionNameUpdate, onAddGroupClick, onDuplicatePosition }) => {
+const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, onItemUpdate, onItemNameUpdate, onItemDelete, onServiceNameUpdate, onSubdivisionNameUpdate, onAddGroupClick, onDuplicatePosition, onAddItemToGroup }) => {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isEditingServiceName, setIsEditingServiceName] = useState(false)
   const [isEditingSubdivisionName, setIsEditingSubdivisionName] = useState(false)
@@ -593,6 +607,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, on
                 const globalIdx = items.indexOf(workItems[idx])
                 onItemDelete(globalIdx)
               } : undefined}
+              onAddItemToGroup={onAddItemToGroup}
             />
           ))}
           {(onAddGroupClick || onDuplicatePosition) && (
@@ -624,7 +639,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, on
   )
 }
 
-export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onDataChange, onAddGroupClick, onDuplicatePosition }) => {
+export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onDataChange, onAddGroupClick, onDuplicatePosition, onAddItemToGroup }) => {
   if (data.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -752,6 +767,7 @@ export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onData
             onSubdivisionNameUpdate={onDataChange ? (newSubdivisionName) => handleSubdivisionNameUpdate(positionNumber, newSubdivisionName) : undefined}
             onAddGroupClick={onAddGroupClick}
             onDuplicatePosition={onDuplicatePosition ? () => onDuplicatePosition(positionNumber) : undefined}
+            onAddItemToGroup={onAddItemToGroup ? (workGroup) => onAddItemToGroup(positionNumber, workGroup) : undefined}
           />
         ))}
       </div>
