@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { ReceptionExcelRow } from '../../utils/parseReceptionExcel'
-import { ChevronDown, ChevronRight, CreditCard as Edit2, Copy, Trash2, Plus } from 'lucide-react'
+import { ChevronDown, ChevronRight, CreditCard as Edit2, Copy, Trash2, Plus, X } from 'lucide-react'
 
 interface ReceptionPreviewProps {
   data: ReceptionExcelRow[]
   onDataChange?: (data: ReceptionExcelRow[]) => void
   onAddGroupClick?: () => void
   onDuplicatePosition?: (positionNumber: number) => void
+  onDeletePosition?: (positionNumber: number) => void
   onAddItemToGroup?: (positionNumber: number, workGroup: string) => void
 }
 
@@ -427,10 +428,11 @@ interface PositionGroupProps {
   onSubdivisionNameUpdate?: (newSubdivisionName: string) => void
   onAddGroupClick?: () => void
   onDuplicatePosition?: () => void
+  onDeletePosition?: () => void
   onAddItemToGroup?: (workGroup: string) => void
 }
 
-const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, onItemUpdate, onItemNameUpdate, onItemDelete, onServiceNameUpdate, onSubdivisionNameUpdate, onAddGroupClick, onDuplicatePosition, onAddItemToGroup }) => {
+const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, onItemUpdate, onItemNameUpdate, onItemDelete, onServiceNameUpdate, onSubdivisionNameUpdate, onAddGroupClick, onDuplicatePosition, onDeletePosition, onAddItemToGroup }) => {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isEditingServiceName, setIsEditingServiceName] = useState(false)
   const [isEditingSubdivisionName, setIsEditingSubdivisionName] = useState(false)
@@ -610,7 +612,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, on
               onAddItemToGroup={onAddItemToGroup}
             />
           ))}
-          {(onAddGroupClick || onDuplicatePosition) && (
+          {(onAddGroupClick || onDuplicatePosition || onDeletePosition) && (
             <div className="mt-4 pl-3 flex items-center gap-4">
               {onAddGroupClick && (
                 <button
@@ -631,6 +633,16 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, on
                   Продублировать позицию
                 </button>
               )}
+              {onDeletePosition && (
+                <button
+                  onClick={onDeletePosition}
+                  className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium transition-colors py-2"
+                  title="Удалить позицию"
+                >
+                  <X size={16} />
+                  Удалить позицию
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -639,7 +651,7 @@ const PositionGroup: React.FC<PositionGroupProps> = ({ positionNumber, items, on
   )
 }
 
-export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onDataChange, onAddGroupClick, onDuplicatePosition, onAddItemToGroup }) => {
+export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onDataChange, onAddGroupClick, onDuplicatePosition, onDeletePosition, onAddItemToGroup }) => {
   if (data.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -767,6 +779,7 @@ export const ReceptionPreview: React.FC<ReceptionPreviewProps> = ({ data, onData
             onSubdivisionNameUpdate={onDataChange ? (newSubdivisionName) => handleSubdivisionNameUpdate(positionNumber, newSubdivisionName) : undefined}
             onAddGroupClick={onAddGroupClick}
             onDuplicatePosition={onDuplicatePosition ? () => onDuplicatePosition(positionNumber) : undefined}
+            onDeletePosition={onDeletePosition ? () => onDeletePosition(positionNumber) : undefined}
             onAddItemToGroup={onAddItemToGroup ? (workGroup) => onAddItemToGroup(positionNumber, workGroup) : undefined}
           />
         ))}

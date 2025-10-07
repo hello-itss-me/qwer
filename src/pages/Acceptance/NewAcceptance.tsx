@@ -135,6 +135,16 @@ export const NewAcceptance: React.FC = () => {
     setSuccessMessage(`Позиция ${positionNumber} продублирована как позиция ${newPositionNumber}`)
   }
 
+  const handleDeletePosition = (positionNumber: number) => {
+    if (!confirm(`Вы уверены, что хотите удалить позицию ${positionNumber}? Это действие нельзя отменить.`)) {
+      return
+    }
+
+    const newData = receptionData.filter(item => item.positionNumber !== positionNumber)
+    setReceptionData(newData)
+    setSuccessMessage(`Позиция ${positionNumber} успешно удалена`)
+  }
+
   return (
     <AppLayout
       title="Новая Приемка"
@@ -171,6 +181,7 @@ export const NewAcceptance: React.FC = () => {
               onDataChange={setReceptionData}
               onAddGroupClick={receptionData.length > 0 ? handleAddGroupClick : undefined}
               onDuplicatePosition={receptionData.length > 0 ? handleDuplicatePosition : undefined}
+              onDeletePosition={receptionData.length > 0 ? handleDeletePosition : undefined}
               onAddItemToGroup={receptionData.length > 0 ? handleAddItemToGroup : undefined}
             />
           )}
